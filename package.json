@@ -1,0 +1,30 @@
+{
+  "name": "corridor-campaign",
+  "version": "1.0.0",
+  "description": "Corridor AI governance campaign videos — built with Remotion",
+  "scripts": {
+    "start": "remotion preview",
+    "build": "remotion render TheShift_16x9 --output out/TheShift_16x9.mp4",
+    "build:all": "npm run build",
+    "preview:s01": "remotion render Preview_S01 --output out/preview/s01.mp4",
+    "preview:s02": "remotion render Preview_S02 --output out/preview/s02.mp4",
+    "preview:s03": "remotion render Preview_S03 --output out/preview/s03.mp4",
+    "preview:s04": "remotion render Preview_S04 --output out/preview/s04.mp4",
+    "preview:s05": "remotion render Preview_S05 --output out/preview/s05.mp4",
+    "preview:s06": "remotion render Preview_S06 --output out/preview/s06.mp4",
+    "preview:s07": "remotion render Preview_S07 --output out/preview/s07.mp4",
+    "preview:s08": "remotion render Preview_S08 --output out/preview/s08.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0",
+    "@remotion/cli": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
+  }
+}
