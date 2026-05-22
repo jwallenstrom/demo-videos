@@ -45,17 +45,29 @@ jobs:
       # ── Step 3: Combine side by side ───────────────────────────────────────
       - name: Combine into split screen
         run: |
-          ffmpeg -i out/presenter.mp4 -i out/product-demo.mp4 \
+          # Check both files exist and have video streams
+          echo "=== Presenter info ==="
+          ffprobe -v error -show_streams -select_streams v out/presenter.mp4 | grep codec_name || true
+          ffprobe -v error -show_streams -select_streams a out/presenter.mp4 | grep codec_name && HAS_AUDIO=1 || HAS_AUDIO=0
+          echo "Presenter has audio: $HAS_AUDIO"
+
+          echo "=== Product demo info ==="
+          ffprobe -v error -show_streams -select_streams v out/product-demo.mp4 | grep codec_name || true
+
+          # Combine — use presenter audio if it exists, otherwise silence
+          ffmpeg -y -i out/presenter.mp4 -i out/product-demo.mp4 \
             -filter_complex \
             "[0:v]scale=640:1080:force_original_aspect_ratio=increase,crop=640:1080,setsar=1[left]; \
              [1:v]scale=1280:1080:force_original_aspect_ratio=increase,crop=1280:1080,setsar=1[right]; \
-             [left][right]hstack=inputs=2[vout]; \
-             [0:a]aformat=sample_rates=44100:channel_layouts=stereo[aout]" \
-            -map "[vout]" -map "[aout]" \
+             [left][right]hstack=inputs=2[vout]" \
+            -map "[vout]" \
+            -map "0:a?" \
             -c:v libx264 -crf 18 -preset fast \
             -c:a aac -b:a 192k \
+            -shortest \
             out/corridor-demo.mp4
-          echo "Done. File size:"
+
+          echo "=== Output ==="
           du -sh out/corridor-demo.mp4
 
       # ── Upload final video ─────────────────────────────────────────────────
