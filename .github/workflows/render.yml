@@ -6,10 +6,10 @@ on:
       composition:
         description: 'Which video to render'
         required: false
-        default: 'TheShift_16x9'
+        default: 'TheShift-16x9'
         type: choice
         options:
-          - TheShift_16x9
+          - TheShift-16x9
           - TheShift
 
 jobs:

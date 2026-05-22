@@ -4,7 +4,7 @@
   "description": "Corridor AI governance campaign videos — built with Remotion",
   "scripts": {
     "start": "remotion preview",
-    "build": "remotion render TheShift_16x9 --output out/TheShift_16x9.mp4",
+    "build": "remotion render TheShift-16x9 --output out/TheShift-16x9.mp4",
     "build:all": "npm run build",
     "preview:s01": "remotion render Preview_S01 --output out/preview/s01.mp4",
     "preview:s02": "remotion render Preview_S02 --output out/preview/s02.mp4",

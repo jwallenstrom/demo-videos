@@ -22,7 +22,7 @@ export const RemotionRoot: React.FC = () => {
       />
       {/* 16:9 alias for the build script */}
       <Composition
-        id="TheShift_16x9"
+        id="TheShift-16x9"
         component={TheShift}
         durationInFrames={V01_TOTAL_FRAMES}
         fps={FPS}
