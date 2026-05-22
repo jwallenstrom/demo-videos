@@ -17,8 +17,13 @@ Corridor is the independent control plane between every AI agent and every repos
 
 You can't govern what you can't observe. Visit corridor.dev to learn more.`;
 
+const HEADERS = {
+  'X-Api-Key': API_KEY,
+  'Authorization': `Bearer ${API_KEY}`,
+};
+
 async function get(path) {
-  const r = await fetch(`${BASE}${path}`, { headers: { 'X-Api-Key': API_KEY } });
+  const r = await fetch(`${BASE}${path}`, { headers: HEADERS });
   const json = await r.json();
   return json;
 }
@@ -26,7 +31,7 @@ async function get(path) {
 async function post(path, body) {
   const r = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'X-Api-Key': API_KEY, 'Content-Type': 'application/json' },
+    headers: { ...HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   return r.json();
