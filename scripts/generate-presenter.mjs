@@ -19,7 +19,8 @@ You can't govern what you can't observe. Visit corridor.dev to learn more.`;
 
 async function get(path) {
   const r = await fetch(`${BASE}${path}`, { headers: { 'X-Api-Key': API_KEY } });
-  return r.json();
+  const json = await r.json();
+  return json;
 }
 
 async function post(path, body) {
@@ -36,23 +37,31 @@ async function main() {
   console.log('Fetching avatars...');
   const avatarsData = await get('/v2/avatars');
   const avatars = avatarsData?.data?.avatars ?? [];
-  if (!avatars.length) throw new Error('No avatars found: ' + JSON.stringify(avatarsData));
-
-  // Prefer a male or female professional-looking avatar if available
+  if (!avatars.length) throw new Error('No avatars: ' + JSON.stringify(avatarsData));
   const avatar = avatars.find(a => /Bryan|Daniel|Daisy|Angela|Tyler|Anna/i.test(a.avatar_name)) ?? avatars[0];
-  console.log('Using avatar:', avatar.avatar_name, avatar.avatar_id);
+  console.log('Avatar:', avatar.avatar_name, avatar.avatar_id);
 
-  // Pick voice
+  // Pick voice — log all English voices found
   console.log('Fetching voices...');
   const voicesData = await get('/v2/voices');
   const voices = voicesData?.data?.voices ?? [];
-  const voice = voices.find(v => v.language === 'English' && v.gender === 'male')
-    ?? voices.find(v => v.language === 'English')
+  console.log('Total voices:', voices.length);
+  const englishVoices = voices.filter(v =>
+    v.language?.toLowerCase().includes('en') ||
+    v.locale?.toLowerCase().includes('en')
+  );
+  console.log('English voices found:', englishVoices.length);
+  englishVoices.slice(0, 5).forEach(v => console.log(' -', v.name, v.voice_id, v.language, v.gender));
+
+  const voice = englishVoices.find(v => v.gender?.toLowerCase() === 'male')
+    ?? englishVoices[0]
     ?? voices[0];
+
+  if (!voice) throw new Error('No voices available');
   console.log('Using voice:', voice.name, voice.voice_id);
 
   // Generate
-  console.log('Submitting video generation...');
+  console.log('Submitting to HeyGen...');
   const genData = await post('/v2/video/generate', {
     video_inputs: [{
       character: {
@@ -71,36 +80,32 @@ async function main() {
         value: '#080810',
       },
     }],
-    dimension: { width: 854, height: 1280 }, // portrait — fits left side of 16:9 split
-    aspect_ratio: null,
+    dimension: { width: 854, height: 1280 },
   });
 
+  console.log('Generate response:', JSON.stringify(genData));
   const videoId = genData?.data?.video_id;
-  if (!videoId) throw new Error('No video_id returned: ' + JSON.stringify(genData));
+  if (!videoId) throw new Error('No video_id: ' + JSON.stringify(genData));
   console.log('Video ID:', videoId);
 
-  // Poll
-  let attempts = 0;
-  while (attempts < 120) {
+  // Poll up to 20 minutes
+  for (let i = 0; i < 120; i++) {
     await new Promise(r => setTimeout(r, 10000));
     const status = await get(`/v1/video_status.get?video_id=${videoId}`);
     const s = status?.data?.status;
-    console.log('Status:', s);
+    console.log(`[${i + 1}/120] Status: ${s}`);
     if (s === 'completed') {
       const url = status.data.video_url;
-      console.log('Downloading from', url);
+      console.log('Video URL:', url);
       const res = await fetch(url);
       const buf = await res.arrayBuffer();
       writeFileSync('out/presenter.mp4', Buffer.from(buf));
-      console.log('Saved to out/presenter.mp4');
+      console.log('Saved out/presenter.mp4');
       return;
     }
-    if (s === 'failed') {
-      throw new Error('HeyGen generation failed: ' + JSON.stringify(status));
-    }
-    attempts++;
+    if (s === 'failed') throw new Error('HeyGen failed: ' + JSON.stringify(status));
   }
-  throw new Error('Timed out waiting for video');
+  throw new Error('Timed out');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
