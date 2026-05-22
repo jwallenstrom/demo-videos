@@ -26,6 +26,18 @@ jobs:
       - name: Create output folder
         run: mkdir -p out
 
+      - name: Check secrets are set
+        run: |
+          if [ -z "$HEYGEN_API_KEY" ]; then
+            echo "❌ HEYGEN_API_KEY is empty — secret not found in GitHub"
+            echo "Go to: github.com/jwallenstrom/demo-videos → Settings → Secrets and variables → Actions"
+            exit 1
+          else
+            echo "✅ HEYGEN_API_KEY is set (${#HEYGEN_API_KEY} characters)"
+          fi
+        env:
+          HEYGEN_API_KEY: ${{ secrets.HEYGEN_API_KEY }}
+
       # ── Step 1: Generate presenter via HeyGen ──────────────────────────────
       - name: Generate presenter video (HeyGen)
         run: node scripts/generate-presenter.mjs
